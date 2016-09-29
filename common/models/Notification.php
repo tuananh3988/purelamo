@@ -3,7 +3,8 @@
 namespace common\models;
 
 use Yii;
-
+use yii\db\ActiveRecord;
+use yii\behaviors\TimestampBehavior;
 /**
  * This is the model class for table "notification".
  *
@@ -31,6 +32,20 @@ class Notification extends \yii\db\ActiveRecord
     {
         return 'notification';
     }
+    
+    public function behaviors()
+    {
+        return [
+            'timestamp' => [
+                'class' => TimestampBehavior::className(),
+                'attributes' => [
+                          ActiveRecord::EVENT_BEFORE_INSERT => ['create_date'],
+                          ActiveRecord::EVENT_BEFORE_UPDATE => ['last_update_date'],
+                ],
+                'value' => date('Y-m-d H:i:s'),
+            ],
+        ];
+    }
 
     /**
      * @inheritdoc
@@ -46,6 +61,7 @@ class Notification extends \yii\db\ActiveRecord
             [['reserve_date'], 'date', 'format' => 'php:Y-m-d H:i:s'],
             [['reserve_date', 'send_begin_date', 'send_end_date', 'create_date', 'last_update_date'], 'safe'],
             [['subject'], 'string', 'max' => 255],
+            ['reserve_date', 'validateDateReserve'],
         ];
     }
 
@@ -66,5 +82,12 @@ class Notification extends \yii\db\ActiveRecord
             'create_date' => 'Create Date',
             'last_update_date' => 'Last Update Date',
         ];
+    }
+    
+    public function validateDateReserve($attribute)
+    {
+        if (strtotime(date('Y-m-d H:i:s')) > strtotime($this->$attribute)) {
+            $this->addError($attribute, 'Reserve Date have to greater than current date!');
+        }
     }
 }

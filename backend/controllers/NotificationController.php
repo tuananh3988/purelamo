@@ -8,6 +8,7 @@ use common\models\SearchNotification;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use yii\filters\AccessControl;
 
 /**
  * NotificationController implements the CRUD actions for Notification model.
@@ -20,6 +21,16 @@ class NotificationController extends Controller
     public function behaviors()
     {
         return [
+            'access' => [
+                'class' => AccessControl::className(),
+                'rules' => [
+                    [
+                        'actions' => ['view' ,'index', 'update', 'delete', 'create'],
+                        'allow' => true,
+                        'roles' => ['@'],
+                    ],
+                ],
+            ],
             'verbs' => [
                 'class' => VerbFilter::className(),
                 'actions' => [
@@ -83,7 +94,10 @@ class NotificationController extends Controller
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
-
+        if ($model->status == 1 || $model->delete_flag == 1) {
+            return $this->redirect(['site/error']);
+        }
+        
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
             return $this->redirect(['view', 'id' => $model->id]);
         } else {
@@ -102,8 +116,13 @@ class NotificationController extends Controller
     public function actionDelete($id)
     {
         $model = $this->findModel($id);
+        if ($model->status == 1 || $model->delete_flag == 1) {
+            return $this->redirect(['site/error']);
+        }
+        
+        
         $model->delete_flag = 1;
-        $model->save();
+        $model->save(false);
         
         return $this->redirect(['index']);
     }
