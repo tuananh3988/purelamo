@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50505
 File Encoding         : 65001
 
-Date: 2016-09-29 18:24:13
+Date: 2016-11-24 11:11:27
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -60,5 +60,4 @@ CREATE TABLE `staffs` (
 -- ----------------------------
 -- Records of staffs
 -- ----------------------------
-INSERT INTO `staffs` VALUES ('1', 'john', 'John Howard', '$2y$13$XuHdQKk83B.mEiSLfPjUaOnVIW.l.oEhGgr0OEvlamtPyOYF7qpf2', null);
-INSERT INTO `staffs` VALUES ('2', 'anhctasdfasdfasdf', 'anhct admin', '$2y$13$oZWGOKCtmkYFMA5uJ295muKDHPT0jpqESYjNKaIA77oa4Z3zKcTEO', null);
+INSERT INTO `staffs` VALUES ('1', 'admin', 'administrator', '$2y$13$R9toPVcMxmo.rU1felbCtO7.JuIWgA0FpID80RRcCEQ/MnEx87UWa', null);
