@@ -28,7 +28,7 @@ class Firebase extends Component
     // sending push message to multiple users by firebase registration ids
     public function sendMultiple($registration_ids, $message) {
         $fields = array(
-            'to' => $registration_ids,
+            'registration_ids' => $registration_ids,
             'data' => $message,
         );
  
@@ -58,7 +58,6 @@ class Firebase extends Component
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
  
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($fields));
- 
         // Execute post
         $result = curl_exec($ch);
         if ($result === FALSE) {
