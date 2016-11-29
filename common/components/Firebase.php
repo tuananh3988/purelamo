@@ -4,6 +4,7 @@ namespace common\components;
 
 use Yii;
 use yii\base\Component;
+use yii\log\Logger;
 
 class Firebase extends Component
 {
@@ -66,7 +67,8 @@ class Firebase extends Component
  
         // Close connection
         curl_close($ch);
- 
+        
+        Yii::info($result, 'push');
         return $result;
     }
 }
