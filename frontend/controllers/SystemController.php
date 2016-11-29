@@ -56,17 +56,25 @@ class SystemController extends Controller
     public function actionCategory()
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
+        $category = \yii::$app->db->createCommand("SELECT wp32_terms.term_id, wp32_terms.name FROM wp32_term_relationships
+            INNER JOIN wp32_postmeta ON wp32_term_relationships.object_id = wp32_postmeta.post_id
+            INNER JOIN wp32_terms on wp32_terms.term_id = wp32_postmeta.meta_value
+            WHERE wp32_term_relationships.term_taxonomy_id = :category_id
+            AND meta_key = '_menu_item_object_id'")
+            ->bindValues([':category_id' => Yii::$app->params['category_id']])
+            ->queryAll();
+        
+        $data = [];
+        foreach ($category as $c) {
+            $data[] = [
+                'id' => $c['term_id'],
+                'category_name' => $c['name'],
+            ];
+        }
+        
         return [
             'success' => 1,
-            'data' => [
-                ['id' => 1, 'category_name' => '美容'],
-                ['id' => 2, 'category_name' => 'ダイエット'],
-                ['id' => 3, 'category_name' => 'ファッション'],
-                ['id' => 4, 'category_name' => 'メイク・コスメ'],
-                ['id' => 5, 'category_name' => 'ヘアスタイル'],
-                ['id' => 6, 'category_name' => 'ライフスタイル'],
-            ]
-            
+            'data' => $data
         ];
     }
     
