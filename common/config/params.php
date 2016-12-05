@@ -4,5 +4,6 @@ return [
     'supportEmail' => 'support@example.com',
     'user.passwordResetTokenExpire' => 3600,
     
-    'aosApikey' => 'AIzaSyAX-0NOcdzcHUuVlOrKkXOe-xLodbqYNw8'
+    'aosApikey' => 'AIzaSyAX-0NOcdzcHUuVlOrKkXOe-xLodbqYNw8',
+    'domainImg' => 'http://purelamo.com/wp-content/uploads/',
 ];
