@@ -7,7 +7,7 @@ use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
 use yii\web\Response;
 use common\models\Utility;
-
+use common\models\PostView;
 /**
  * Site controller
  */
@@ -138,7 +138,7 @@ class NewsController extends Controller
                 'categories' => Utility::getNewsCategories($q['ID']),
                 'thumbnail' => Yii::$app->params['domainImg'] . $q['meta_value'],
                 'created_date' => $q['post_date'],
-                'views' => 0,
+                'views' => Utility::getPostView($q['ID']),
             ];
         }
         return [
@@ -147,7 +147,6 @@ class NewsController extends Controller
             'offset' => $offset + $limit,
             'data' => $data
         ];
-
     }
     
     public function actionDetail()
@@ -163,8 +162,16 @@ class NewsController extends Controller
                 'mgs' => 'Post id is required.'
             ];
         }
-        //
-        $sql = "SELECT * FROM post_view WHERE post_id = :post_id";
+        //select postview
+        $postView = PostView::findOne(['post_id' => $get['post_id']]);
+        if (!$postView) {
+            //create postview
+            $postView = new PostView();
+            $postView->post_id = $get['post_id'];
+            $postView->count = 0;
+            $postView->created_date = date("Y-m-d H:i:s");
+            $postView->save();
+        }
         
         $sql = "SELECT wp32_posts.ID, wp32_posts.post_title, wp32_posts.post_content, wp32_posts.post_date, pm2.meta_value, wp32_users.ID as author_id, wp32_users.display_name FROM wp32_posts"
                 . " INNER JOIN wp32_postmeta AS pm1 ON wp32_posts.ID = pm1.post_id
@@ -173,13 +180,14 @@ class NewsController extends Controller
                 . " WHERE pm1.meta_key = '_thumbnail_id'
                     AND pm2.meta_key = '_wp_attached_file'
                     AND wp32_posts.post_status = 'publish' AND wp32_posts.ID = :post_id";
-        
-        
+
         $query = \yii::$app->db->createCommand($sql);
         $query = $query->bindValues([':post_id' => $get['post_id']]);
         $query = $query->queryOne();
-        //update view count
-        $sqlView = "";
+        //update postview count
+        $postView->count++;
+        $postView->updated_date = date("Y-m-d H:i:s");
+        $postView->save();
         return [
             'success' => 1,
             'data' => [
@@ -189,7 +197,7 @@ class NewsController extends Controller
                     'created_date' => $query['post_date'],
                     'title' => $query['post_title'],
                     'categories' => Utility::getNewsCategories($query['ID']),
-                    'views' => 0,
+                    'views' => Utility::getPostView($query['ID']),
                     //'favourite_flag' => true,
                     'contents' => $query['post_content'],
                     'author_id' => $query['author_id'],
@@ -198,7 +206,7 @@ class NewsController extends Controller
             ]
         ];
     }
-    
+
     public function actionRelate()
     {
         Yii::$app->response->format = Response::FORMAT_JSON;

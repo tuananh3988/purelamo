@@ -29,4 +29,9 @@ class Utility extends \yii\base\Model
         
         return $data;
     }
+    
+    public static function getPostView($postId) {
+        $postView = PostView::findOne(['post_id' => $postId]);
+        return empty($postView['count']) ? 0 : $postView['count'];
+    }
 }
