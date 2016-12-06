@@ -76,6 +76,10 @@ class NewsController extends Controller
             $where .= " AND wp32_terms.term_id = :category_id";
         }
         
+        if (!empty($get['keyword'])) {
+            $where .= " AND (wp32_posts.post_title LIKE :keyword OR wp32_posts.post_content LIKE :keyword)";
+        }
+        
         $order = " ORDER BY wp32_posts.post_date DESC";
 
         
@@ -111,6 +115,12 @@ class NewsController extends Controller
             $isTop = false;
         }
         
+        if (!empty($get['keyword'])) {
+            $query = $query->bindValues([':keyword' => "%" . $get['keyword'] . "%" ]);
+            $queryCount = $queryCount->bindValues([':keyword' => "%" . $get['keyword'] . "%" ]);
+            $isTop = false;
+        }
+        
         if ($isTop) {
             $count['count'] = 11;
         }
@@ -129,7 +139,6 @@ class NewsController extends Controller
                 'thumbnail' => Yii::$app->params['domainImg'] . $q['meta_value'],
                 'created_date' => $q['post_date'],
                 'views' => 0,
-                //'favourite_flag' => 0,
             ];
         }
         return [
@@ -138,6 +147,7 @@ class NewsController extends Controller
             'offset' => $offset + $limit,
             'data' => $data
         ];
+
     }
     
     public function actionDetail()
