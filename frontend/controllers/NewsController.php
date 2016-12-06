@@ -56,7 +56,9 @@ class NewsController extends Controller
         Yii::$app->response->format = Response::FORMAT_JSON;
         $request = Yii::$app->request;
         $get = $request->get();
-        $sql = "SELECT wp32_posts.ID, wp32_posts.post_title, wp32_posts.post_date, pm2.meta_value FROM wp32_posts";
+        $isTop = true;
+        $selectCount = "SELECT count(*) as count FROM wp32_posts";
+        $select = "SELECT wp32_posts.ID, wp32_posts.post_title, wp32_posts.post_date, pm2.meta_value FROM wp32_posts";
         $join = " INNER JOIN wp32_postmeta AS pm1 ON wp32_posts.ID = pm1.post_id
             INNER JOIN wp32_postmeta AS pm2 ON pm1.meta_value = pm2.post_id";
         
@@ -66,8 +68,6 @@ class NewsController extends Controller
             INNER JOIN wp32_terms ON wp32_terms.term_id = wp32_term_taxonomy.term_id";
         }
         
-        $sql .= $join;
-        
         $where = " WHERE pm1.meta_key = '_thumbnail_id'
             AND pm2.meta_key = '_wp_attached_file'
             AND wp32_posts.post_status = 'publish'";
@@ -76,22 +76,48 @@ class NewsController extends Controller
             $where .= " AND wp32_terms.term_id = :category_id";
         }
         
-        $sql .= $where;
-        
         $order = " ORDER BY wp32_posts.post_date DESC";
-        $sql .= $order;
+
         
-        $limit = !empty($get['limit']) && ctype_digit($get['limit']) ? $get['limit'] : Yii::$app->params['numberOfPage'];
-        $sql .= " LIMIT " . $limit;
+        if (!empty($get['limit']) && ctype_digit($get['limit'])) {
+            $limit = $get['limit'];
+            $isTop = false;
+        }
+        else {
+            $limit = Yii::$app->params['numberOfPage'];
+            
+        }
         
-        $offset = !empty($get['offset']) && ctype_digit($get['offset']) ? $get['offset'] : Yii::$app->params['offset'];
-        $sql .= " OFFSET " . $offset;
+        $limitStr = " LIMIT " . $limit;
+        
+        if (!empty($get['offset']) && ctype_digit($get['offset'])) {
+            $offset = $get['offset'];
+            $isTop = false;
+        }
+        else {
+            $offset = Yii::$app->params['offset'];
+        }
+        
+        $offsetStr = " OFFSET " . $offset;
+        
+        $sql = $select . $join . $where . $order . $limitStr . $offsetStr;
+        $sqlCount = $selectCount . $join . $where . $order;
         
         $query = \yii::$app->db->createCommand($sql);
+        $queryCount = \yii::$app->db->createCommand($sqlCount);
         if(!empty($get['category_id'])) {
             $query = $query->bindValues([':category_id' => $get['category_id']]);
+            $queryCount = $queryCount->bindValues([':category_id' => $get['category_id']]);
+            $isTop = false;
         }
-            
+        
+        if ($isTop) {
+            $count['count'] = 11;
+        }
+        else {
+            $count = $queryCount->queryOne();
+        }
+        
         $query = $query->queryAll();
         
         $data = [];
@@ -103,11 +129,13 @@ class NewsController extends Controller
                 'thumbnail' => Yii::$app->params['domainImg'] . $q['meta_value'],
                 'created_date' => $q['post_date'],
                 'views' => 0,
-                'favourite_flag' => 0,
+                //'favourite_flag' => 0,
             ];
         }
         return [
             'success' => 1,
+            'count' => $count['count'],
+            'offset' => $offset + $limit,
             'data' => $data
         ];
     }
@@ -115,16 +143,48 @@ class NewsController extends Controller
     public function actionDetail()
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
+        $request = Yii::$app->request;
+        $get = $request->get();
+        $data = [];
+        
+        if (empty($get['post_id'])) {
+            return [
+                'success' => 0,
+                'mgs' => 'Post id is required.'
+            ];
+        }
+        //
+        $sql = "SELECT * FROM post_view WHERE post_id = :post_id";
+        
+        $sql = "SELECT wp32_posts.ID, wp32_posts.post_title, wp32_posts.post_content, wp32_posts.post_date, pm2.meta_value, wp32_users.ID as author_id, wp32_users.display_name FROM wp32_posts"
+                . " INNER JOIN wp32_postmeta AS pm1 ON wp32_posts.ID = pm1.post_id
+                    INNER JOIN wp32_postmeta AS pm2 ON pm1.meta_value = pm2.post_id
+                    INNER JOIN wp32_users ON wp32_users.ID = wp32_posts.post_author"
+                . " WHERE pm1.meta_key = '_thumbnail_id'
+                    AND pm2.meta_key = '_wp_attached_file'
+                    AND wp32_posts.post_status = 'publish' AND wp32_posts.ID = :post_id";
+        
+        
+        $query = \yii::$app->db->createCommand($sql);
+        $query = $query->bindValues([':post_id' => $get['post_id']]);
+        $query = $query->queryOne();
+        //update view count
+        $sqlView = "";
         return [
             'success' => 1,
             'data' => [
-                'post_id' => '12769',
-                'created_date' => '2016-09-19',
-                'title' => '結婚するならどんな人？結婚生活で不幸にならない男性の選び方',
-                'categories' => [1, 2, 3],
-                'views' => 1242,
-                'favourite_flag' => true,
-                'contents' => '<h3 class="spam">エマジニーは男性だけでなく女性にもおすすめ♡</h3><p><a href="http://purelamo.com/wp-content/uploads/2016/05/emaona.jpg" rel="attachment wp-att-7628"><img src="http://purelamo.com/wp-content/uploads/2016/05/emaona.jpg" alt="emaona" width="679" height="320" class="alignnone size-full wp-image-7628" srcset="http://purelamo.com/wp-content/uploads/2016/05/emaona-300x141.jpg 300w, http://purelamo.com/wp-content/uploads/2016/05/emaona.jpg 679w, http://purelamo.com/wp-content/uploads/2016/05/emaona-300x141@2x.jpg 600w" sizes="(max-width: 679px) 100vw, 679px"></a></p><p>女性の中で個性あふれたファッションや髪型が好きな人はいるでしょう。ファッションが好き、いろんなことに挑戦するのが好きという女性もたくさんいます。</p>',
+                'detail' => [
+                    'post_id' => $query['ID'],
+                    'thumbnail' => Yii::$app->params['domainImg'] . $query['meta_value'],
+                    'created_date' => $query['post_date'],
+                    'title' => $query['post_title'],
+                    'categories' => Utility::getNewsCategories($query['ID']),
+                    'views' => 0,
+                    //'favourite_flag' => true,
+                    'contents' => $query['post_content'],
+                    'author_id' => $query['author_id'],
+                    'author_name' => $query['display_name'],
+                ]
             ]
         ];
     }
