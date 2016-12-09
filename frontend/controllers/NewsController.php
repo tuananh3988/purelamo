@@ -246,7 +246,10 @@ class NewsController extends Controller
             ];
         }
         
-        return $data;
+        return [
+            'success' => 1,
+            'data' => $data
+        ];
     
     }
 
