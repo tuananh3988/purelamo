@@ -70,7 +70,9 @@ class NewsController extends Controller
         
         $where = " WHERE pm1.meta_key = '_thumbnail_id'
             AND pm2.meta_key = '_wp_attached_file'
-            AND wp32_posts.post_status = 'publish'";
+            AND wp32_posts.post_status = 'publish'
+            AND wp32_posts.post_type = 'post'";
+            
         
         if(!empty($get['category_id'])) {
             $where .= " AND wp32_terms.term_id = :category_id";
@@ -122,7 +124,7 @@ class NewsController extends Controller
         }
         
         if ($isTop) {
-            $count['count'] = 11;
+            $count['count'] = Yii::$app->params['numberOfPage'];
         }
         else {
             $count = $queryCount->queryOne();
@@ -163,15 +165,15 @@ class NewsController extends Controller
             ];
         }
         //select postview
-        $postView = PostView::findOne(['post_id' => $get['post_id']]);
-        if (!$postView) {
-            //create postview
-            $postView = new PostView();
-            $postView->post_id = $get['post_id'];
-            $postView->count = 0;
-            $postView->created_date = date("Y-m-d H:i:s");
-            $postView->save();
-        }
+//        $postView = PostView::findOne(['post_id' => $get['post_id']]);
+//        if (!$postView) {
+//            //create postview
+//            $postView = new PostView();
+//            $postView->post_id = $get['post_id'];
+//            $postView->count = 0;
+//            $postView->created_date = date("Y-m-d H:i:s");
+//            $postView->save();
+//        }
         
         $sql = "SELECT wp32_posts.ID, wp32_posts.post_title, wp32_posts.post_content, wp32_posts.post_date, pm2.meta_value, wp32_users.ID as author_id, wp32_users.display_name FROM wp32_posts"
                 . " INNER JOIN wp32_postmeta AS pm1 ON wp32_posts.ID = pm1.post_id
@@ -185,9 +187,12 @@ class NewsController extends Controller
         $query = $query->bindValues([':post_id' => $get['post_id']]);
         $query = $query->queryOne();
         //update postview count
-        $postView->count++;
-        $postView->updated_date = date("Y-m-d H:i:s");
-        $postView->save();
+//        $postView->count++;
+//        $postView->updated_date = date("Y-m-d H:i:s");
+//        $postView->save();
+        //get categories
+        $categories = Utility::getNewsCategories($query['ID']);
+        $categoryRelated = empty($categories[0]['id']) ? 0 : $categories[0]['id'];
         return [
             'success' => 1,
             'data' => [
@@ -196,71 +201,53 @@ class NewsController extends Controller
                     'thumbnail' => Yii::$app->params['domainImg'] . $query['meta_value'],
                     'created_date' => $query['post_date'],
                     'title' => $query['post_title'],
-                    'categories' => Utility::getNewsCategories($query['ID']),
+                    'categories' => $categories,
                     'views' => Utility::getPostView($query['ID']),
                     //'favourite_flag' => true,
                     'contents' => $query['post_content'],
                     'author_id' => $query['author_id'],
                     'author_name' => $query['display_name'],
-                ]
+                ],
+                'related' => Utility::getRelated($categoryRelated),
+                'recommend' => [],
+                
             ]
-        ];
-    }
-
-    public function actionRelate()
-    {
-        Yii::$app->response->format = Response::FORMAT_JSON;
-        return [
-            'success' => 1,
-            'data' => [
-                ['post_id' => '12769' , 'title' => '結婚するならどんな人？結婚生活で不幸にならない男性の選び方', 'categories' => [1, 2, 3], 'thumbnail' => 'http://purelamo.com/wp-content/uploads/wordpress-popular-posts/12757-featured-75x75.jpg', 'views' => 3000, 'favourite_flag' => true],
-                ['post_id' => '12740' , 'title' => '【ハロウィンの季節到来】ハロウィン仮装のご紹介＼(^o^)／♡', 'categories' => [1, 2], 'thumbnail' => 'http://purelamo.com/wp-content/uploads/wordpress-popular-posts/11354-featured-75x75.jpg', 'views' => 3100, 'favourite_flag' => false],
-                ['post_id' => '12600' , 'title' => '女性も使える！気軽に髪色チェンジ♡『エマジニーヘアカラーアートワックス』', 'categories' => [3], 'thumbnail' => 'http://purelamo.com/wp-content/uploads/wordpress-popular-posts/5801-featured-75x75.jpg',  'views' => 200, 'favourite_flag' => true],
-            ]
-            
-        ];
-    }
-    
-    public function actionRecommend()
-    {
-        Yii::$app->response->format = Response::FORMAT_JSON;
-        return [
-            'success' => 1,
-            'data' => [
-                ['post_id' => '12769' , 'title' => '結婚するならどんな人？結婚生活で不幸にならない男性の選び方', 'categories' => [1, 2, 3], 'thumbnail' => 'http://purelamo.com/wp-content/uploads/wordpress-popular-posts/12757-featured-75x75.jpg', 'views' => 3000, 'favourite_flag' => true],
-                ['post_id' => '12740' , 'title' => '【ハロウィンの季節到来】ハロウィン仮装のご紹介＼(^o^)／♡', 'categories' => [1, 2], 'thumbnail' => 'http://purelamo.com/wp-content/uploads/wordpress-popular-posts/11354-featured-75x75.jpg', 'views' => 3100, 'favourite_flag' => false],
-                ['post_id' => '12600' , 'title' => '女性も使える！気軽に髪色チェンジ♡『エマジニーヘアカラーアートワックス』', 'categories' => [3], 'thumbnail' => 'http://purelamo.com/wp-content/uploads/wordpress-popular-posts/5801-featured-75x75.jpg',  'views' => 200, 'favourite_flag' => true],
-            ]
-            
         ];
     }
     
     public function actionRanking()
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
-        return [
-            'success' => 1,
-            'data' => [
-                ['post_id' => '12769' , 'title' => '結婚するならどんな人？結婚生活で不幸にならない男性の選び方', 'categories' => [1, 2, 3], 'thumbnail' => 'http://purelamo.com/wp-content/uploads/wordpress-popular-posts/12757-featured-75x75.jpg', 'views' => 3000, 'favourite_flag' => true],
-                ['post_id' => '12740' , 'title' => '【ハロウィンの季節到来】ハロウィン仮装のご紹介＼(^o^)／♡', 'categories' => [1, 2], 'thumbnail' => 'http://purelamo.com/wp-content/uploads/wordpress-popular-posts/11354-featured-75x75.jpg', 'views' => 3100, 'favourite_flag' => false],
-                ['post_id' => '12600' , 'title' => '女性も使える！気軽に髪色チェンジ♡『エマジニーヘアカラーアートワックス』', 'categories' => [3], 'thumbnail' => 'http://purelamo.com/wp-content/uploads/wordpress-popular-posts/5801-featured-75x75.jpg',  'views' => 200, 'favourite_flag' => true],
-            ]
+        
+        $sql = "SELECT wp32_posts.ID, wp32_posts.post_title, wp32_posts.post_date, pm2.meta_value FROM wp32_posts
+            INNER JOIN wp32_postmeta AS pm1 ON wp32_posts.ID = pm1.post_id
+            INNER JOIN wp32_postmeta AS pm2 ON pm1.meta_value = pm2.post_id
+            INNER JOIN wp32_popularpostsdata ON wp32_popularpostsdata.postid = wp32_posts.ID
+            WHERE pm1.meta_key = '_thumbnail_id'
+            AND pm2.meta_key = '_wp_attached_file'
+            AND wp32_posts.post_status = 'publish'
+            AND wp32_posts.post_type = 'post'
+            ORDER BY wp32_popularpostsdata.pageviews DESC
+            LIMIT :limit";
             
-        ];
-    }
+        $query = \yii::$app->db->createCommand($sql);
+        $query = $query->bindValues([':limit' => Yii::$app->params['ranking_limit']]);
+        $query = $query->queryAll();
+        
+        $data = [];
+        foreach ($query as $q) {
+            $data[] = [
+                'post_id' => $q['ID'],
+                'title' => $q['post_title'],
+                'categories' => Utility::getNewsCategories($q['ID']),
+                'thumbnail' => Yii::$app->params['domainImg'] . $q['meta_value'],
+                'created_date' => $q['post_date'],
+                'views' => Utility::getPostView($q['ID']),
+            ];
+        }
+        
+        return $data;
     
-    public function actionSearch()
-    {
-        Yii::$app->response->format = Response::FORMAT_JSON;
-        return [
-            'success' => 1,
-            'data' => [
-                ['post_id' => '12769' , 'title' => '結婚するならどんな人？結婚生活で不幸にならない男性の選び方', 'categories' => [1, 2, 3], 'thumbnail' => 'http://purelamo.com/wp-content/uploads/wordpress-popular-posts/12757-featured-75x75.jpg', 'views' => 3000, 'favourite_flag' => true],
-                ['post_id' => '12740' , 'title' => '【ハロウィンの季節到来】ハロウィン仮装のご紹介＼(^o^)／♡', 'categories' => [1, 2], 'thumbnail' => 'http://purelamo.com/wp-content/uploads/wordpress-popular-posts/11354-featured-75x75.jpg', 'views' => 3100, 'favourite_flag' => false],
-                ['post_id' => '12600' , 'title' => '女性も使える！気軽に髪色チェンジ♡『エマジニーヘアカラーアートワックス』', 'categories' => [3], 'thumbnail' => 'http://purelamo.com/wp-content/uploads/wordpress-popular-posts/5801-featured-75x75.jpg',  'views' => 200, 'favourite_flag' => true],
-            ]
-            
-        ];
     }
 
 }
