@@ -209,7 +209,8 @@ class NewsController extends Controller
                     'author_name' => $query['display_name'],
                 ],
                 'related' => Utility::getRelated($categoryRelated),
-                'recommend' => [],
+                'recommend' => Utility::getRecommend(),
+                
                 
             ]
         ];

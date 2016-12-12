@@ -78,5 +78,40 @@ class Utility extends \yii\base\Model
         
         return $data;
     }
+    
+    public static function getRecommend() {
+       
+        $sql = "SELECT wp32_posts.ID, wp32_posts.post_title, wp32_posts.post_date, pm2.meta_value FROM wp32_posts
+            INNER JOIN wp32_postmeta AS pm1 ON wp32_posts.ID = pm1.post_id
+            INNER JOIN wp32_postmeta AS pm2 ON pm1.meta_value = pm2.post_id
+            INNER JOIN wp32_term_relationships ON wp32_term_relationships.object_id = wp32_posts.ID
+            INNER JOIN wp32_term_taxonomy ON wp32_term_relationships.term_taxonomy_id = wp32_term_taxonomy.term_taxonomy_id
+            INNER JOIN wp32_terms ON wp32_terms.term_id = wp32_term_taxonomy.term_id
+            WHERE pm1.meta_key = '_thumbnail_id'
+            AND pm2.meta_key = '_wp_attached_file'
+            AND wp32_posts.post_status = 'publish'
+            AND wp32_posts.post_type = 'post'
+            AND wp32_terms.term_id = :category_id
+            ORDER BY RAND()
+            LIMIT :limit";
+            
+        $query = \yii::$app->db->createCommand($sql);
+        $query = $query->bindValues([':category_id' => Yii::$app->params['recommend_category'], ':limit' => Yii::$app->params['recommend_limit']]);
+        $query = $query->queryAll();
+
+        $data = [];
+        foreach ($query as $q) {
+            $data[] = [
+                'post_id' => $q['ID'],
+                'title' => $q['post_title'],
+                'categories' => Utility::getNewsCategories($q['ID']),
+                'thumbnail' => Yii::$app->params['domainImg'] . $q['meta_value'],
+                'created_date' => $q['post_date'],
+                'views' => Utility::getPostView($q['ID']),
+            ];
+        }
+        
+        return $data;
+    }
         
 }
