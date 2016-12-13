@@ -5,5 +5,7 @@ return [
     'numberOfPage' => 11,
     'offset' => 0,
     'related_limit' => 3,
+    'recommend_limit' => 5,
+    'recommend_category' => 119,
     'ranking_limit' => 5
 ];

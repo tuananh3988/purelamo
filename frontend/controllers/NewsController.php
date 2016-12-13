@@ -209,7 +209,8 @@ class NewsController extends Controller
                     'author_name' => $query['display_name'],
                 ],
                 'related' => Utility::getRelated($categoryRelated),
-                'recommend' => [],
+                'recommend' => Utility::getRecommend(),
+                
                 
             ]
         ];
@@ -246,7 +247,10 @@ class NewsController extends Controller
             ];
         }
         
-        return $data;
+        return [
+            'success' => 1,
+            'data' => $data
+        ];
     
     }
 
