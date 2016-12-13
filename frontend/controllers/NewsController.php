@@ -204,7 +204,7 @@ class NewsController extends Controller
                     'categories' => $categories,
                     'views' => Utility::getPostView($query['ID']),
                     //'favourite_flag' => true,
-                    'contents' => $query['post_content'],
+                    'contents' => Utility::wpautop($query['post_content']),
                     'author_id' => $query['author_id'],
                     'author_name' => $query['display_name'],
                 ],
