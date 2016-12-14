@@ -7,6 +7,7 @@ use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
 use yii\web\Response;
 use common\models\Utility;
+use common\models\WpFormat;
 use common\models\PostView;
 /**
  * Site controller
@@ -203,8 +204,7 @@ class NewsController extends Controller
                     'title' => $query['post_title'],
                     'categories' => $categories,
                     'views' => Utility::getPostView($query['ID']),
-                    //'favourite_flag' => true,
-                    'contents' => Utility::wpautop($query['post_content']),
+                    'contents' => Utility::renderPostContent($query['post_content']),
                     'author_id' => $query['author_id'],
                     'author_name' => $query['display_name'],
                 ],
