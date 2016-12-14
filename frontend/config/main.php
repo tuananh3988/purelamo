@@ -46,7 +46,7 @@ return [
         'request' => [
             'baseUrl' => '/api',
             'enableCookieValidation' => true,
-            'enableCsrfValidation' => true,
+            'enableCsrfValidation' => false,
             'cookieValidationKey' => 'xxxxxxx',
         ],
         

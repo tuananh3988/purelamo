@@ -6,6 +6,7 @@ use yii\web\Controller;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
 use yii\web\Response;
+use common\models\Devices;
 /**
  * Site controller
  */
@@ -21,7 +22,7 @@ class SystemController extends Controller
                 'class' => AccessControl::className(),
                 'rules' => [
                     [
-                        'actions' => ['category'],
+                        'actions' => ['category', 'register'],
                         'allow' => true,
                         'roles' => ['?'],
                     ],
@@ -30,7 +31,7 @@ class SystemController extends Controller
             'verbs' => [
                 'class' => VerbFilter::className(),
                 'actions' => [
-                    //'category' => ['post'],
+                    'register' => ['post'],
                 ],
             ],
         ];
@@ -78,6 +79,46 @@ class SystemController extends Controller
         ];
     }
     
+    public function actionRegister()
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+        $request = Yii::$app->request;
+        $postData = $request->post();
+        if (empty($postData['type']) || empty($postData['device_id']) || empty($postData['device_token'])) {
+            return [
+                'success' => 0,
+                'mgs' => 'Param invalid.'
+            ];
+        }
+        
+        $device = Devices::findOne(['type' => $postData['type'], 'device_id' => $postData['device_id']]);
+        
+        if (!$device) {
+            $device = new Devices();
+            $device->device_id = $postData['device_id'];
+            $device->device_token = $postData['device_token'];
+            $device->type = $postData['type'];
+            if ($device->save()) {
+                return [
+                    'success' => 1,
+                ];
+            }
+            
+            return [
+                'success' => 0,
+                'mgs' => 'Have error validate'
+            ];
+        }
+        else {
+            $device->device_token = $postData['device_token'];
+            $device->save();
+            return [
+                'success' => 1,
+            ];
+        }
+        
+
+    }
 
 
 }

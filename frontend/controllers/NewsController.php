@@ -24,7 +24,7 @@ class NewsController extends Controller
                 'class' => AccessControl::className(),
                 'rules' => [
                     [
-                        'actions' => ['list', 'detail', 'relate', 'recommend', 'ranking', 'search'],
+                        'actions' => ['list', 'detail', 'ranking'],
                         'allow' => true,
                         'roles' => ['?'],
                     ],
@@ -165,16 +165,6 @@ class NewsController extends Controller
                 'mgs' => 'Post id is required.'
             ];
         }
-        //select postview
-//        $postView = PostView::findOne(['post_id' => $get['post_id']]);
-//        if (!$postView) {
-//            //create postview
-//            $postView = new PostView();
-//            $postView->post_id = $get['post_id'];
-//            $postView->count = 0;
-//            $postView->created_date = date("Y-m-d H:i:s");
-//            $postView->save();
-//        }
         
         $sql = "SELECT wp32_posts.ID, wp32_posts.post_title, wp32_posts.post_content, wp32_posts.post_date, pm2.meta_value, wp32_users.ID as author_id, wp32_users.display_name FROM wp32_posts"
                 . " INNER JOIN wp32_postmeta AS pm1 ON wp32_posts.ID = pm1.post_id
@@ -187,10 +177,6 @@ class NewsController extends Controller
         $query = \yii::$app->db->createCommand($sql);
         $query = $query->bindValues([':post_id' => $get['post_id']]);
         $query = $query->queryOne();
-        //update postview count
-//        $postView->count++;
-//        $postView->updated_date = date("Y-m-d H:i:s");
-//        $postView->save();
         //get categories
         $categories = Utility::getNewsCategories($query['ID']);
         $categoryRelated = empty($categories[0]['id']) ? 0 : $categories[0]['id'];

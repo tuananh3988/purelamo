@@ -9,7 +9,7 @@ use yii\web\Response;
 /**
  * Site controller
  */
-class FavouriteController extends Controller
+class NoticeController extends Controller
 {
     /**
      * @inheritdoc
@@ -21,7 +21,7 @@ class FavouriteController extends Controller
                 'class' => AccessControl::className(),
                 'rules' => [
                     [
-                        'actions' => ['list', 'add', 'delete'],
+                        'actions' => ['list', 'detail'],
                         'allow' => true,
                         'roles' => ['?'],
                     ],
@@ -61,20 +61,13 @@ class FavouriteController extends Controller
         ];
     }
     
-    public function actionAdd()
+    public function actionDetail()
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
         return [
             'success' => 1,
         ];
     }
-    
-    public function actionDelete()
-    {
-        Yii::$app->response->format = Response::FORMAT_JSON;
-        return [
-            'success' => 1,
-        ];
-    }
+
 
 }
