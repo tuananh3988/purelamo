@@ -49,6 +49,7 @@ class Devices extends \yii\db\ActiveRecord
             [['type'], 'integer'],
             [['created_date', 'updated_date'], 'safe'],
             [['device_id', 'device_token'], 'string', 'max' => 255],
+            ['type', 'number', 'min'=> 1, 'max'=> 2, 'tooSmall'=> \Yii::t('app', 'Type have to 1 or 2'), 'tooBig'=> \Yii::t('app', 'Type have to 1 or 2')],
         ];
     }
 
