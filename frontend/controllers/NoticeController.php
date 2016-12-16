@@ -6,6 +6,7 @@ use yii\web\Controller;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
 use yii\web\Response;
+use common\models\Notification;
 /**
  * Site controller
  */
@@ -51,13 +52,28 @@ class NoticeController extends Controller
     public function actionList()
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
+        $request = Yii::$app->request;
+        $getData = $request->get();
+        $limit = empty($getData['limit']) ? Yii::$app->params['notice_limit'] : $getData['limit'];
+        $offset = empty($getData['offset']) ? Yii::$app->params['offset'] : $getData['offset'];
+        
+        $notify = Notification::find()->where(['status' => 1, 'delete_flag' => 0])->limit($limit)->offset($offset)->all();
+        $count = Notification::find()->where(['status' => 1, 'delete_flag' => 0])->count();
+        $data = [];
+        foreach ($notify as $n) {
+            $data[] = [
+                'notice_id' => $n['id'],
+                'subject' => $n['subject'],
+                'message' => $n['message'],
+                'date' => $n['reserve_date'],
+            ];
+        }
+        
         return [
             'success' => 1,
-            'data' => [
-                ['post_id' => '12769' , 'title' => '結婚するならどんな人？結婚生活で不幸にならない男性の選び方', 'categories' => [1, 2, 3], 'thumbnail' => 'http://purelamo.com/wp-content/uploads/wordpress-popular-posts/12757-featured-75x75.jpg', 'views' => 3000, 'favourite_flag' => true],
-                ['post_id' => '12740' , 'title' => '【ハロウィンの季節到来】ハロウィン仮装のご紹介＼(^o^)／♡', 'categories' => [1, 2], 'thumbnail' => 'http://purelamo.com/wp-content/uploads/wordpress-popular-posts/11354-featured-75x75.jpg', 'views' => 3100, 'favourite_flag' => false],
-                ['post_id' => '12600' , 'title' => '女性も使える！気軽に髪色チェンジ♡『エマジニーヘアカラーアートワックス』', 'categories' => [3], 'thumbnail' => 'http://purelamo.com/wp-content/uploads/wordpress-popular-posts/5801-featured-75x75.jpg',  'views' => 200, 'favourite_flag' => true],
-            ]
+            'count' => $count,
+            'offset' => $offset + (count($notify) < $limit ? count($notify) : $limit),
+            'data' => $data
         ];
     }
     

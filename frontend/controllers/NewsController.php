@@ -24,7 +24,7 @@ class NewsController extends Controller
                 'class' => AccessControl::className(),
                 'rules' => [
                     [
-                        'actions' => ['list', 'detail', 'ranking'],
+                        'actions' => ['list', 'detail', 'ranking', 'auto-complete'],
                         'allow' => true,
                         'roles' => ['?'],
                     ],
@@ -238,6 +238,16 @@ class NewsController extends Controller
             'data' => $data
         ];
     
+    }
+    
+    public function actionAutoComplete()
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+        
+        return [
+            'success' => 1,
+            'data' => ['クリスマス', 'ヘアカラー', 'ヘアアレンジ', 'プレゼント', '結婚式', '財布', '占い', 'しまむら', 'ファッション']
+        ];
     }
 
 }

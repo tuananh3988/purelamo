@@ -7,5 +7,6 @@ return [
     'related_limit' => 3,
     'recommend_limit' => 5,
     'recommend_category' => 119,
-    'ranking_limit' => 5
+    'ranking_limit' => 5,
+    'notice_limit' => 10,
 ];
