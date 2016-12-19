@@ -107,6 +107,13 @@ class NewsController extends Controller
         
         $offsetStr = " OFFSET " . $offset;
         
+        if(!empty($get['ids'])) {
+            $ids = $get['ids'];
+            $where .= " AND wp32_posts.ID in ($ids)";
+            $limitStr = '';
+            $offsetStr = '';
+        }
+        
         $sql = $select . $join . $where . $order . $limitStr . $offsetStr;
         $sqlCount = $selectCount . $join . $where . $order;
         
@@ -121,6 +128,10 @@ class NewsController extends Controller
         if (!empty($get['keyword'])) {
             $query = $query->bindValues([':keyword' => "%" . $get['keyword'] . "%" ]);
             $queryCount = $queryCount->bindValues([':keyword' => "%" . $get['keyword'] . "%" ]);
+            $isTop = false;
+        }
+        
+        if (!empty($get['ids'])) {
             $isTop = false;
         }
         
