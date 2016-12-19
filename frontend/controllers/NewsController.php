@@ -271,15 +271,22 @@ class NewsController extends Controller
         $get = $request->get();
         $data = [];
         
-        if (empty($get['post_id'])) {
+        if (empty($get['keyword'])) {
             return [
                 'success' => 0,
-                'mgs' => 'Post id is required.'
+                'mgs' => 'keyword is required.'
             ];
         }
+        
+        $searchSumary = SearchSumary::find()->where(['like', 'keyword', $get['keyword']])->orderBy('count DESC')->limit(Yii::$app->params['keyword_search_limit'])->all();
+        
+        foreach ($searchSumary as $s) {
+            $data[] = $s['keyword'];
+        }
+        
         return [
             'success' => 1,
-            'data' => ['クリスマス', 'ヘアカラー', 'ヘアアレンジ', 'プレゼント', '結婚式', '財布', '占い', 'しまむら', 'ファッション']
+            'data' => $data
         ];
     }
 

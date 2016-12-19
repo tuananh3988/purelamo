@@ -9,4 +9,5 @@ return [
     'recommend_category' => 119,
     'ranking_limit' => 5,
     'notice_limit' => 10,
+    'keyword_search_limit' => 10,
 ];
