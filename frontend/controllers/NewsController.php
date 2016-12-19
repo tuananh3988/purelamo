@@ -9,6 +9,7 @@ use yii\web\Response;
 use common\models\Utility;
 use common\models\WpFormat;
 use common\models\PostView;
+use common\models\SearchSumary;
 /**
  * Site controller
  */
@@ -129,6 +130,17 @@ class NewsController extends Controller
             $query = $query->bindValues([':keyword' => "%" . $get['keyword'] . "%" ]);
             $queryCount = $queryCount->bindValues([':keyword' => "%" . $get['keyword'] . "%" ]);
             $isTop = false;
+            $searchSumary = SearchSumary::findOne(['keyword' => $get['keyword']]);
+            if ($searchSumary) {
+                $searchSumary->count++;
+                $searchSumary->save();
+            }  else {
+                $searchSumary = new SearchSumary();
+                $searchSumary->keyword = $get['keyword'];
+                $searchSumary->count = 1;
+                $searchSumary->save();
+            }
+            
         }
         
         if (!empty($get['ids'])) {
@@ -255,7 +267,16 @@ class NewsController extends Controller
     public function actionAutoComplete()
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
+        $request = Yii::$app->request;
+        $get = $request->get();
+        $data = [];
         
+        if (empty($get['post_id'])) {
+            return [
+                'success' => 0,
+                'mgs' => 'Post id is required.'
+            ];
+        }
         return [
             'success' => 1,
             'data' => ['クリスマス', 'ヘアカラー', 'ヘアアレンジ', 'プレゼント', '結婚式', '財布', '占い', 'しまむら', 'ファッション']
