@@ -6,4 +6,5 @@ return [
     
     'aosApikey' => 'AIzaSyAX-0NOcdzcHUuVlOrKkXOe-xLodbqYNw8',
     'domainImg' => 'http://purelamo.com/wp-content/uploads/',
+    'domain' => 'http://purelamo.com/',
 ];

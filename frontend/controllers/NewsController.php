@@ -177,7 +177,7 @@ class NewsController extends Controller
             ];
         }
         
-        $sql = "SELECT wp32_posts.ID, wp32_posts.post_title, wp32_posts.post_content, wp32_posts.post_date, pm2.meta_value, wp32_users.ID as author_id, wp32_users.display_name FROM wp32_posts"
+        $sql = "SELECT wp32_posts.ID, wp32_posts.post_title, wp32_posts.post_name, wp32_posts.post_content, wp32_posts.post_date, pm2.meta_value, wp32_users.ID as author_id, wp32_users.display_name FROM wp32_posts"
                 . " INNER JOIN wp32_postmeta AS pm1 ON wp32_posts.ID = pm1.post_id
                     INNER JOIN wp32_postmeta AS pm2 ON pm1.meta_value = pm2.post_id
                     INNER JOIN wp32_users ON wp32_users.ID = wp32_posts.post_author"
@@ -197,6 +197,7 @@ class NewsController extends Controller
                 'detail' => [
                     'post_id' => $query['ID'],
                     'thumbnail' => Yii::$app->params['domainImg'] . $query['meta_value'],
+                    'url_detail' => Yii::$app->params['domain'] . $query['post_name'],
                     'created_date' => $query['post_date'],
                     'title' => $query['post_title'],
                     'categories' => $categories,
