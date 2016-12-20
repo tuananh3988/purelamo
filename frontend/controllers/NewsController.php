@@ -113,6 +113,7 @@ class NewsController extends Controller
             $where .= " AND wp32_posts.ID in ($ids)";
             $limitStr = '';
             $offsetStr = '';
+            $order = " ORDER BY FIELD(wp32_posts.ID, $ids)";
         }
         
         $sql = $select . $join . $where . $order . $limitStr . $offsetStr;
@@ -270,15 +271,12 @@ class NewsController extends Controller
         $request = Yii::$app->request;
         $get = $request->get();
         $data = [];
-        
-        if (empty($get['keyword'])) {
-            return [
-                'success' => 0,
-                'mgs' => 'keyword is required.'
-            ];
+        $where = '';
+        if (!empty($get['keyword'])) {
+            $where = ['like', 'keyword', $get['keyword']];
         }
         
-        $searchSumary = SearchSumary::find()->where(['like', 'keyword', $get['keyword']])->orderBy('count DESC')->limit(Yii::$app->params['keyword_search_limit'])->all();
+        $searchSumary = SearchSumary::find()->where($where)->orderBy('count DESC')->limit(Yii::$app->params['keyword_search_limit'])->all();
         
         foreach ($searchSumary as $s) {
             $data[] = $s['keyword'];
