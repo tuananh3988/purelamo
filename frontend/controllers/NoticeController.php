@@ -7,6 +7,7 @@ use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
 use yii\web\Response;
 use common\models\Notification;
+use common\models\Devices;
 /**
  * Site controller
  */
@@ -22,7 +23,7 @@ class NoticeController extends Controller
                 'class' => AccessControl::className(),
                 'rules' => [
                     [
-                        'actions' => ['list', 'detail'],
+                        'actions' => ['list', 'setting'],
                         'allow' => true,
                         'roles' => ['?'],
                     ],
@@ -31,7 +32,7 @@ class NoticeController extends Controller
             'verbs' => [
                 'class' => VerbFilter::className(),
                 'actions' => [
-                    //'category' => ['post'],
+                    'setting' => ['post'],
                 ],
             ],
         ];
@@ -77,12 +78,40 @@ class NoticeController extends Controller
         ];
     }
     
-    public function actionDetail()
+    public function actionSetting()
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
-        return [
-            'success' => 1,
-        ];
+        $request = Yii::$app->request;
+        $postData = $request->post();
+        if (empty($postData['type']) || empty($postData['device_id']) || empty($postData['type_notify'])) {
+            return [
+                'success' => 0,
+                'mgs' => 'Param invalid.'
+            ];
+        }
+        
+        $device = Devices::findOne(['type' => $postData['type'], 'device_id' => $postData['device_id']]);
+        
+        if (!$device) {           
+            return [
+                'success' => 0,
+                'mgs' => 'Device id not register.'
+            ];
+        }
+        else {
+            $device->type_time_recieve_notify = $postData['type_notify'];
+            if ($device->save()) {
+                return [
+                    'success' => 1,
+                ];
+            }
+
+            return [
+                'success' => 0,
+                'mgs' => 'Have error validate'
+            ];
+        }
+        
     }
 
 

@@ -10,4 +10,10 @@ return [
     'ranking_limit' => 5,
     'notice_limit' => 10,
     'keyword_search_limit' => 10,
+    'time_notify_setting' => [
+        2 => [
+            'start' => '',
+            'end' => '',
+        ]
+    ]
 ];

@@ -98,6 +98,8 @@ class SystemController extends Controller
             $device->device_id = $postData['device_id'];
             $device->device_token = $postData['device_token'];
             $device->type = $postData['type'];
+            $device->type_time_recieve_notify = 1;
+            
             if ($device->save()) {
                 return [
                     'success' => 1,

@@ -50,6 +50,7 @@ class Devices extends \yii\db\ActiveRecord
             [['created_date', 'updated_date'], 'safe'],
             [['device_id', 'device_token'], 'string', 'max' => 255],
             ['type', 'number', 'min'=> 1, 'max'=> 2, 'tooSmall'=> \Yii::t('app', 'Type have to 1 or 2'), 'tooBig'=> \Yii::t('app', 'Type have to 1 or 2')],
+            ['type_time_recieve_notify', 'number', 'min'=> 1, 'max'=> 3, 'tooSmall'=> \Yii::t('app', 'Type time recieve notify have to between 1 and 3'), 'tooBig'=> \Yii::t('app', 'Type time recieve notify have to between 1 and 3')],
         ];
     }
 
