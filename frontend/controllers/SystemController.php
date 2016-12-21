@@ -22,7 +22,7 @@ class SystemController extends Controller
                 'class' => AccessControl::className(),
                 'rules' => [
                     [
-                        'actions' => ['category', 'register'],
+                        'actions' => ['category', 'register', 'info'],
                         'allow' => true,
                         'roles' => ['?'],
                     ],
@@ -118,9 +118,37 @@ class SystemController extends Controller
                 'success' => 1,
             ];
         }
-        
 
     }
 
+    public function actionInfo()
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+        $request = Yii::$app->request;
+        $getData = $request->get();
+        if (empty($getData['type']) || empty($getData['device_id'])) {
+            return [
+                'success' => 0,
+                'mgs' => 'Param invalid.'
+            ];
+        }
+        
+        $device = Devices::findOne(['type' => $getData['type'], 'device_id' => $getData['device_id']]);
+        
+        if ($device) {
+            return [
+                'success' => 1,
+                'data' => [
+                    'notice_setting' => $device->type_time_recieve_notify,
+                ]
+            ];
+        }
+        
+        return [
+                'success' => 0,
+                'mgs' => 'Have error validate'
+            ];
+
+    }
 
 }

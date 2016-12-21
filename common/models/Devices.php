@@ -66,6 +66,7 @@ class Devices extends \yii\db\ActiveRecord
             'device_token' => 'Device Token',
             'created_date' => 'Created Date',
             'updated_date' => 'Updated Date',
+            'type_time_recieve_notify' => 'Type time recieve notify',
         ];
     }
 }
