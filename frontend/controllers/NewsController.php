@@ -219,6 +219,7 @@ class NewsController extends Controller
                     'author_id' => $query['author_id'],
                     'author_name' => $query['display_name'],
                 ],
+                'author' => Utility::getAuthorInfo($query['author_id']),
                 'related' => Utility::getRelated($categoryRelated),
                 'recommend' => Utility::getRecommend(),
                 

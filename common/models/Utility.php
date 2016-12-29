@@ -33,6 +33,24 @@ class Utility extends \yii\base\Model
         return $data;
     }
     
+    public static function getAuthorInfo($authorId) {
+        $query = \yii::$app->db->createCommand('SELECT meta_value from wp32_usermeta '
+                . 'WHERE user_id = :author_id '
+                . 'AND (meta_key = "nickname" OR meta_key = "description" OR meta_key = "ts_fab_twitter" OR meta_key ="ts_fab_instagram" OR meta_key = "" OR meta_key ="simple_local_avatar")')
+        ->bindValues([':author_id' => $authorId])
+        ->queryColumn();
+        
+        $author = [
+            'nickname' => $query[0],
+            'description' => $query[1],
+            'twitter' => $query[2],
+            'instagram' => $query[3],
+            'avatar' => unserialize($query[4]),
+        ];
+        
+        return $author;
+    }
+    
     public static function getPostView($postId) {
         $postView = $query = \yii::$app->db->createCommand("SELECT postid, pageviews FROM wp32_popularpostsdata WHERE postid = :post_id")
         ->bindValues([':post_id' => $postId])
