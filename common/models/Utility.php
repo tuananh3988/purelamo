@@ -36,9 +36,15 @@ class Utility extends \yii\base\Model
     public static function getAuthorInfo($authorId) {
         $query = \yii::$app->db->createCommand('SELECT meta_value from wp32_usermeta '
                 . 'WHERE user_id = :author_id '
-                . 'AND (meta_key = "nickname" OR meta_key = "description" OR meta_key = "ts_fab_twitter" OR meta_key ="ts_fab_instagram" OR meta_key = "" OR meta_key ="simple_local_avatar")')
+                . 'AND (meta_key = "nickname" OR meta_key = "description" OR meta_key = "ts_fab_twitter" OR meta_key ="ts_fab_instagram" OR meta_key ="simple_local_avatar")'
+                . ' ORDER BY FIELD(meta_key, "nickname", "description", "ts_fab_twitter", "ts_fab_instagram", "simple_local_avatar")')
         ->bindValues([':author_id' => $authorId])
         ->queryColumn();
+        $avatar = '';
+
+        if (!empty($query[4])) {
+            $avatar = unserialize($query[4]);
+        }
         
         $author = [
             'id' => $authorId,
@@ -46,7 +52,7 @@ class Utility extends \yii\base\Model
             'description' => $query[1],
             'twitter' => $query[2],
             'instagram' => $query[3],
-            'avatar' => unserialize($query[4]),
+            'avatar' => $avatar["100"],
         ];
         
         return $author;
