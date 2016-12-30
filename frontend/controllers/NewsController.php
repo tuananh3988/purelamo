@@ -10,6 +10,8 @@ use common\models\Utility;
 use common\models\WpFormat;
 use common\models\PostView;
 use common\models\SearchSumary;
+use common\models\Wp32Popularpostsdata;
+use common\models\Wp32Popularpostssummary;
 /**
  * Site controller
  */
@@ -199,6 +201,33 @@ class NewsController extends Controller
                 'mgs' => 'Post id is required.'
             ];
         }
+        
+        //update count view
+        $currentDate = date("Y-m-d");
+        $viewSummary = Wp32Popularpostssummary::findOne(['postid' => $get['post_id'], 'view_date' => $currentDate]);
+       
+        if (!$viewSummary) {
+            $viewSummary = new Wp32Popularpostssummary();
+            $viewSummary->postid = $get['post_id'];
+            $viewSummary->view_date = $currentDate;
+            $viewSummary->pageviews = 0;
+        }
+        
+        $viewSummary->pageviews = $viewSummary->pageviews + 1;
+        $viewSummary->last_viewed = date('Y-m-d H:i:s');
+        $viewSummary->save();
+        
+        $viewData = Wp32Popularpostsdata::findOne(['postid' => $get['post_id']]);
+        if (!$viewData) {
+            $viewData = new Wp32Popularpostsdata();
+            $viewData->postid = $get['post_id'];
+            $viewData->day = date('Y-m-d H:i:s');
+            $viewData->pageviews = 0;
+        }
+        
+        $viewData->pageviews = $viewData->pageviews + 1;
+        $viewData->last_viewed = date('Y-m-d H:i:s');
+        $viewData->save();
         
         $sql = "SELECT wp32_posts.ID, wp32_posts.post_title, wp32_posts.post_name, wp32_posts.post_content, wp32_posts.post_date, pm2.meta_value, wp32_users.ID as author_id, wp32_users.display_name FROM wp32_posts"
                 . " INNER JOIN wp32_postmeta AS pm1 ON wp32_posts.ID = pm1.post_id
