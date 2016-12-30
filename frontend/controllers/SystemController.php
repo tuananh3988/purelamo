@@ -7,6 +7,7 @@ use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
 use yii\web\Response;
 use common\models\Devices;
+use common\models\Wp32Terms;
 /**
  * Site controller
  */
@@ -54,7 +55,7 @@ class SystemController extends Controller
      *
      * @return mixed
      */
-    public function actionCategory()
+    public function actionCategoryOld()
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
         $category = \yii::$app->db->createCommand("SELECT wp32_terms.term_id, wp32_terms.name FROM wp32_term_relationships
@@ -64,6 +65,28 @@ class SystemController extends Controller
             AND meta_key = '_menu_item_object_id'")
             ->bindValues([':category_id' => Yii::$app->params['category_id']])
             ->queryAll();
+        
+        $data = [];
+        foreach ($category as $c) {
+            $data[] = [
+                'id' => $c['term_id'],
+                'category_name' => $c['name'],
+            ];
+        }
+        
+        return [
+            'success' => 1,
+            'data' => $data
+        ];
+    }
+    
+    public function actionCategory()
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+        
+        $category = Wp32Terms::find()->where(['in', 'term_id', Yii::$app->params['categories']])
+                ->orderBy([new \yii\db\Expression('FIELD (term_id, ' . implode(',', Yii::$app->params['categories']) . ')')])
+                ->all();
         
         $data = [];
         foreach ($category as $c) {

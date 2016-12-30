@@ -2,6 +2,7 @@
 return [
     'adminEmail' => 'admin@example.com',
     'category_id' => 122,
+    'categories' => [315, 2, 13, 3, 4, 5, 6, 10, 9, 8, 7, 119],
     'numberOfPage' => 11,
     'offset' => 0,
     'related_limit' => 3,
