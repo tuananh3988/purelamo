@@ -41,6 +41,7 @@ class Utility extends \yii\base\Model
         ->queryColumn();
         
         $author = [
+            'id' => $authorId,
             'nickname' => $query[0],
             'description' => $query[1],
             'twitter' => $query[2],
