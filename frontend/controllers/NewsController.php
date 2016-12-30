@@ -84,6 +84,10 @@ class NewsController extends Controller
             $where .= " AND (wp32_posts.post_title LIKE :keyword OR wp32_posts.post_content LIKE :keyword)";
         }
         
+        if(!empty($get['author_id'])) {
+            $where .= " AND wp32_posts.post_author = :author_id";
+        }
+        
         $order = " ORDER BY wp32_posts.post_date DESC";
 
         
@@ -142,6 +146,12 @@ class NewsController extends Controller
                 $searchSumary->save();
             }
             
+        }
+        
+        if (!empty($get['author_id'])) {
+            $query = $query->bindValues([':author_id' => $get['author_id']]);
+            $queryCount = $queryCount->bindValues([':author_id' => $get['author_id']]);
+            $isTop = false;
         }
         
         if (!empty($get['ids'])) {
