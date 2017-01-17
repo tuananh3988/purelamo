@@ -271,15 +271,22 @@ class NewsController extends Controller
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
         
-        $sql = "SELECT wp32_posts.ID, wp32_posts.post_title, wp32_posts.post_date, pm2.meta_value FROM wp32_posts
+        $date = date("Y-m-d", strtotime("-2 days", strtotime(date("Y-m-d"))));
+        $sql = "SELECT wp32_posts.ID, wp32_posts.post_title, wp32_posts.post_date, pm2.meta_value, viewsumary.suma FROM wp32_posts
             INNER JOIN wp32_postmeta AS pm1 ON wp32_posts.ID = pm1.post_id
             INNER JOIN wp32_postmeta AS pm2 ON pm1.meta_value = pm2.post_id
-            INNER JOIN wp32_popularpostsdata ON wp32_popularpostsdata.postid = wp32_posts.ID
+            INNER JOIN (
+                    SELECT postid, sum(pageviews) suma
+                    FROM wp32_popularpostssummary
+                    WHERE view_date >= '$date'
+                    GROUP BY postid
+                    ORDER BY suma DESC) viewsumary 
+            ON viewsumary.postid = wp32_posts.ID
             WHERE pm1.meta_key = '_thumbnail_id'
             AND pm2.meta_key = '_wp_attached_file'
             AND wp32_posts.post_status = 'publish'
             AND wp32_posts.post_type = 'post'
-            ORDER BY wp32_popularpostsdata.pageviews DESC
+            ORDER BY viewsumary.suma DESC
             LIMIT :limit";
             
         $query = \yii::$app->db->createCommand($sql);
