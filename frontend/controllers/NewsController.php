@@ -27,7 +27,7 @@ class NewsController extends Controller
                 'class' => AccessControl::className(),
                 'rules' => [
                     [
-                        'actions' => ['list', 'detail', 'ranking', 'auto-complete'],
+                        'actions' => ['list', 'detail', 'ranking', 'auto-complete', 'favorite', 'unfavorite'],
                         'allow' => true,
                         'roles' => ['?'],
                     ],
@@ -36,7 +36,8 @@ class NewsController extends Controller
             'verbs' => [
                 'class' => VerbFilter::className(),
                 'actions' => [
-                    //'category' => ['post'],
+                    'favorite' => ['post'],
+                    'unfavorite' => ['post'],
                 ],
             ],
         ];
@@ -333,6 +334,26 @@ class NewsController extends Controller
             'success' => 1,
             'data' => $data
         ];
+    }
+    
+    public function actionFavorite()
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+        
+        return [
+            'success' => 1,
+        ];
+        
+    }
+    
+    public function actionUnfavorite()
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+        
+        return [
+            'success' => 1,
+        ];
+        
     }
 
 }
