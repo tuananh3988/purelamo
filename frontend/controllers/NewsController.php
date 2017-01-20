@@ -12,6 +12,8 @@ use common\models\PostView;
 use common\models\SearchSumary;
 use common\models\Wp32Popularpostsdata;
 use common\models\Wp32Popularpostssummary;
+use common\models\FavoritePost;
+use common\models\FavoriteSumary;
 /**
  * Site controller
  */
@@ -203,6 +205,13 @@ class NewsController extends Controller
             ];
         }
         
+        if (empty($get['device_id'])) {
+            return [
+                'success' => 0,
+                'mgs' => 'Device id is required.'
+            ];
+        }
+        
         //update count view
         $currentDate = date("Y-m-d");
         $viewSummary = Wp32Popularpostssummary::findOne(['postid' => $get['post_id'], 'view_date' => $currentDate]);
@@ -258,6 +267,7 @@ class NewsController extends Controller
                     'contents' => Utility::renderPostContent($query['post_content']),
                     'author_id' => $query['author_id'],
                     'author_name' => $query['display_name'],
+                    'is_favorite' => FavoritePost::isFavorited($query['ID'], $get['device_id'])
                 ],
                 'author' => Utility::getAuthorInfo($query['author_id']),
                 'related' => Utility::getRelated($categoryRelated),
@@ -339,6 +349,42 @@ class NewsController extends Controller
     public function actionFavorite()
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
+        $request = Yii::$app->request;
+        $post = $request->post();
+        
+        if (empty($post['post_id']) || empty($post['device_id'])) {
+            return [
+                'success' => 0,
+                'mgs' => 'Params invalid.'
+            ];
+        }
+        
+        $favorite = FavoritePost::find()->where([
+            'device_id' => $post['device_id'],
+            'post_id' => $post['post_id'],
+            'favorite_flag' => 1
+        ])->one();
+        
+        if (!$favorite) {
+            $favorite = new FavoritePost();
+            $favorite->device_id = $post['device_id'];
+            $favorite->post_id = $post['post_id'];
+            $favorite->favorite_flag = 1;
+            $favorite->save();
+            
+            $favoriteSumary = FavoriteSumary::find()->where(['post_id' => $post['post_id']])->one();
+            if ($favoriteSumary) {
+                $favoriteSumary->total_favorite++;
+                $favoriteSumary->save();
+            }
+            else {
+                $favoriteSumary = new FavoriteSumary();
+                $favoriteSumary->post_id = $post['post_id'];
+                $favoriteSumary->total_favorite = 1;
+                $favoriteSumary->save();
+            }
+            
+        }
         
         return [
             'success' => 1,
@@ -349,6 +395,38 @@ class NewsController extends Controller
     public function actionUnfavorite()
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
+        $request = Yii::$app->request;
+        $post = $request->post();
+        
+        if (empty($post['post_id']) || empty($post['device_id'])) {
+            return [
+                'success' => 0,
+                'mgs' => 'Params invalid.'
+            ];
+        }
+        
+        $favorite = FavoritePost::find()->where([
+            'device_id' => $post['device_id'],
+            'post_id' => $post['post_id'],
+            'favorite_flag' => 1
+        ])->one();
+        
+        if (!$favorite) {
+            return [
+                'success' => 0,
+                'mgs' => 'Device id not favorite the post.'
+            ];
+        }
+        
+        $favorite->unfavorite_date = date('Y-m-d H:i:s');
+        $favorite->favorite_flag = 0;
+        $favorite->save();
+        
+        $favoriteSumary = FavoriteSumary::find()->where(['post_id' => $post['post_id']])->one();
+        if ($favoriteSumary) {
+            $favoriteSumary->total_favorite--;
+            $favoriteSumary->save();
+        }
         
         return [
             'success' => 1,

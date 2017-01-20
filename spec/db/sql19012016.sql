@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50505
 File Encoding         : 65001
 
-Date: 2017-01-19 17:29:12
+Date: 2017-01-20 16:26:37
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -26,19 +26,19 @@ CREATE TABLE `favorite_post` (
   `favorite_flag` tinyint(4) NOT NULL,
   `unfavorite_date` datetime DEFAULT NULL,
   `created_date` datetime DEFAULT NULL,
-  `update_date` datetime DEFAULT NULL,
+  `updated_date` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Table structure for favorite_sumary
 -- ----------------------------
 DROP TABLE IF EXISTS `favorite_sumary`;
 CREATE TABLE `favorite_sumary` (
-  `id` int(11) NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `post_id` int(11) NOT NULL,
   `total_favorite` int(11) NOT NULL,
   `created_date` datetime DEFAULT NULL,
   `updated_date` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
