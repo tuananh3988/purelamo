@@ -66,7 +66,7 @@ class FavoriteSumary extends \yii\db\ActiveRecord
     
     public static function getCountFavorite($postId) {
         $favorite = FavoriteSumary::find()->where([
-            'post_id' => $deviceId,
+            'post_id' => $postId,
         ])->one();
         
         if ($favorite) {

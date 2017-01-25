@@ -64,15 +64,28 @@ class NewsController extends Controller
         $request = Yii::$app->request;
         $get = $request->get();
         $isTop = true;
+        
+        if (empty($get['device_id'])) {
+            return [
+                'success' => 0,
+                'mgs' => 'Device id is required.'
+            ];
+        }
+        
         $selectCount = "SELECT count(*) as count FROM wp32_posts";
-        $select = "SELECT wp32_posts.ID, wp32_posts.post_title, wp32_posts.post_date, pm2.meta_value FROM wp32_posts";
+        $select = "SELECT wp32_posts.ID, wp32_posts.post_title, wp32_posts.post_date, pm2.meta_value, wp32_users.ID as author_id, wp32_users.display_name FROM wp32_posts";
         $join = " INNER JOIN wp32_postmeta AS pm1 ON wp32_posts.ID = pm1.post_id
-            INNER JOIN wp32_postmeta AS pm2 ON pm1.meta_value = pm2.post_id";
+            INNER JOIN wp32_postmeta AS pm2 ON pm1.meta_value = pm2.post_id
+            INNER JOIN wp32_users ON wp32_users.ID = wp32_posts.post_author";
         
         if(!empty($get['category_id'])) {
             $join .= " INNER JOIN wp32_term_relationships ON wp32_term_relationships.object_id = wp32_posts.ID
             INNER JOIN wp32_term_taxonomy ON wp32_term_relationships.term_taxonomy_id = wp32_term_taxonomy.term_taxonomy_id
             INNER JOIN wp32_terms ON wp32_terms.term_id = wp32_term_taxonomy.term_id";
+        }
+        
+        if(!empty($get['list_favorite'])) {
+            $join .= " INNER JOIN favorite_post ON favorite_post.post_id = wp32_posts.ID AND favorite_flag = 1 AND device_id ='" . $get['device_id'] . "'";
         }
         
         $where = " WHERE pm1.meta_key = '_thumbnail_id'
@@ -181,6 +194,10 @@ class NewsController extends Controller
                 'thumbnail' => Yii::$app->params['domainImg'] . $q['meta_value'],
                 'created_date' => $q['post_date'],
                 'views' => Utility::getPostView($q['ID']),
+                'author_id' => $q['author_id'],
+                'author_name' => $q['display_name'],
+                'isFavorite' => FavoritePost::isFavorited($q['ID'], $get['device_id']),
+                'total_favorite' => FavoriteSumary::getCountFavorite($q['ID']),
             ];
         }
         return [
@@ -267,7 +284,8 @@ class NewsController extends Controller
                     'contents' => Utility::renderPostContent($query['post_content']),
                     'author_id' => $query['author_id'],
                     'author_name' => $query['display_name'],
-                    'is_favorite' => FavoritePost::isFavorited($query['ID'], $get['device_id'])
+                    'is_favorite' => FavoritePost::isFavorited($query['ID'], $get['device_id']),
+                    'total_favorite' => FavoriteSumary::getCountFavorite($query['ID']),
                 ],
                 'author' => Utility::getAuthorInfo($query['author_id']),
                 'related' => Utility::getRelated($categoryRelated),
@@ -281,11 +299,21 @@ class NewsController extends Controller
     public function actionRanking()
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
+        $request = Yii::$app->request;
+        $get = $request->get();
+        
+        if (empty($get['device_id'])) {
+            return [
+                'success' => 0,
+                'mgs' => 'Device id is required.'
+            ];
+        }
         
         $date = date("Y-m-d", strtotime("-2 days", strtotime(date("Y-m-d"))));
-        $sql = "SELECT wp32_posts.ID, wp32_posts.post_title, wp32_posts.post_date, pm2.meta_value, viewsumary.suma FROM wp32_posts
+        $sql = "SELECT wp32_posts.ID, wp32_posts.post_title, wp32_posts.post_date, pm2.meta_value, viewsumary.suma, wp32_users.ID as author_id, wp32_users.display_name FROM wp32_posts
             INNER JOIN wp32_postmeta AS pm1 ON wp32_posts.ID = pm1.post_id
             INNER JOIN wp32_postmeta AS pm2 ON pm1.meta_value = pm2.post_id
+            INNER JOIN wp32_users ON wp32_users.ID = wp32_posts.post_author
             INNER JOIN (
                     SELECT postid, sum(pageviews) suma
                     FROM wp32_popularpostssummary
@@ -313,6 +341,10 @@ class NewsController extends Controller
                 'thumbnail' => Yii::$app->params['domainImg'] . $q['meta_value'],
                 'created_date' => $q['post_date'],
                 'views' => Utility::getPostView($q['ID']),
+                'author_id' => $q['author_id'],
+                'author_name' => $q['display_name'],
+                'isFavorite' => FavoritePost::isFavorited($q['ID'], $get['device_id']),
+                'total_favorite' => FavoriteSumary::getCountFavorite($q['ID']),
             ];
         }
         

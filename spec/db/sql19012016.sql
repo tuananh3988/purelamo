@@ -42,3 +42,6 @@ CREATE TABLE `favorite_sumary` (
   `updated_date` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+
+ALTER TABLE `favorite_post`
+MODIFY COLUMN `device_id`  varchar(255) NOT NULL AFTER `id`;

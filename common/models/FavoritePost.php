@@ -47,7 +47,7 @@ class FavoritePost extends \yii\db\ActiveRecord
     {
         return [
             [['device_id', 'post_id', 'favorite_flag'], 'required'],
-            [['device_id', 'post_id', 'favorite_flag'], 'integer'],
+            [['post_id', 'favorite_flag'], 'integer'],
             [['unfavorite_date', 'created_date', 'updated_date'], 'safe'],
         ];
     }
@@ -70,8 +70,8 @@ class FavoritePost extends \yii\db\ActiveRecord
     
     public static function isFavorited($postId, $deviceId) {
         $favorite = FavoritePost::find()->where([
-            'device_id' => $postId,
-            'post_id' => $deviceId,
+            'post_id' => $postId,
+            'device_id' => $deviceId,
             'favorite_flag' => 1
         ])->one();
         
