@@ -34,24 +34,45 @@ class Utility extends \yii\base\Model
     }
     
     public static function getAuthorInfo($authorId) {
-        $query = \yii::$app->db->createCommand('SELECT meta_value from wp32_usermeta '
+        $nickname = \yii::$app->db->createCommand('SELECT meta_value from wp32_usermeta '
                 . 'WHERE user_id = :author_id '
-                . 'AND (meta_key = "nickname" OR meta_key = "description" OR meta_key = "ts_fab_twitter" OR meta_key ="ts_fab_instagram" OR meta_key ="simple_local_avatar")'
-                . ' ORDER BY FIELD(meta_key, "nickname", "description", "ts_fab_twitter", "ts_fab_instagram", "simple_local_avatar")')
+                . 'AND (meta_key = "nickname")')
         ->bindValues([':author_id' => $authorId])
-        ->queryColumn();
-        $avatar = '';
+        ->queryOne();
+        
+        $description = \yii::$app->db->createCommand('SELECT meta_value from wp32_usermeta '
+                . 'WHERE user_id = :author_id '
+                . 'AND (meta_key = "description")')
+        ->bindValues([':author_id' => $authorId])
+        ->queryOne();
+        
+        $twitter = \yii::$app->db->createCommand('SELECT meta_value from wp32_usermeta '
+                . 'WHERE user_id = :author_id '
+                . 'AND (meta_key = "ts_fab_twitter")')
+        ->bindValues([':author_id' => $authorId])
+        ->queryOne();
+        
+        $instagram = \yii::$app->db->createCommand('SELECT meta_value from wp32_usermeta '
+                . 'WHERE user_id = :author_id '
+                . 'AND (meta_key = "ts_fab_instagram")')
+        ->bindValues([':author_id' => $authorId])
+        ->queryOne();
+        
+        $avatar = \yii::$app->db->createCommand('SELECT meta_value from wp32_usermeta '
+                . 'WHERE user_id = :author_id '
+                . 'AND (meta_key = "simple_local_avatar")')
+        ->bindValues([':author_id' => $authorId])
+        ->queryOne();
 
-        if (!empty($query[4])) {
-            $avatar = unserialize($query[4]);
-        }
+
+        $avatar = unserialize($avatar['meta_value']);
         
         $author = [
             'id' => $authorId,
-            'nickname' => $query[0],
-            'description' => $query[1],
-            'twitter' => $query[2],
-            'instagram' => $query[3],
+            'nickname' => $nickname['meta_value'],
+            'description' => $description['meta_value'],
+            'twitter' => $twitter['meta_value'],
+            'instagram' => $instagram['meta_value'],
             'avatar' => $avatar["100"],
         ];
         
