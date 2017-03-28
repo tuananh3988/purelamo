@@ -15,8 +15,15 @@ class PushController extends \yii\console\Controller
     public function actionIndex()
     {
         $notify = Notification::find()->where(['status' => 0, 'delete_flag' => 0])->andWhere('reserve_date <= "' . date('Y-m-d H:i:s') . '"')->all();
-        
+
         foreach ($notify as $n) {
+            $reserveDate = date("H:i:s", strtotime($n->reserve_date));
+            
+            $timeType = 3;
+            if ($reserveDate < "12:00:00") {
+                $timeType = 2;
+            }
+            
             Yii::info('Notification id: ' . $n->id . ' start', 'push'); 
             $res = [
                 'data' => [
@@ -31,11 +38,15 @@ class PushController extends \yii\console\Controller
             $aos = Devices::find()->where(['type' => 2])->all();
             $regisIds = [];
             foreach ($aos as $a) {
+                if ()
                 $regisIds[] = $a['device_token'];
             }
+            
+            if (!empty($regisIds)) {
+                $firebase = new Firebase();
+                $result = $firebase->sendMultiple($regisIds, $res);
+            }
 
-            $firebase = new Firebase();
-            $result = $firebase->sendMultiple($regisIds, $res);
             //send ios
             Yii::info('send ios start', 'push');
             $ios = Devices::find()->where(['type' => 1])->all();
@@ -45,19 +56,22 @@ class PushController extends \yii\console\Controller
                     $regisIds[] = $i['device_token'];
                 }
             }
-            $apns = Yii::$app->apns;
-            $mgs = $apns->sendMulti($regisIds, $n['message'],
-                [
-                  'customProperty' => 'Hello',
-                ],
-                [
-                  'sound' => 'default',
-                  'badge' => 1
-                ]
-            );
+            if (!empty($regisIds)) {
+                $apns = Yii::$app->apns;
+                $mgs = $apns->sendMulti($regisIds, $n['message'],
+                    [
+                      'customProperty' => 'Hello',
+                    ],
+                    [
+                      'sound' => 'default',
+                      'badge' => 1
+                    ]
+                );
+
+                Yii::info('log ios: ', 'push');
+                Yii::info($mgs, 'push');
+            }
             
-            Yii::info('log ios: ', 'push');
-            Yii::info($mgs, 'push');
             //update status notification.status = 1
             $n->status = 1;
             $n->last_update_date = date('Y-m-d H:i:s');

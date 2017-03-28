@@ -12,6 +12,15 @@ return [
     'bootstrap' => ['log'],
     'controllerNamespace' => 'console\controllers',
     'components' => [
+        'apns' => [
+		'class' => 'bryglen\apnsgcm\Apns',
+		'environment' => \bryglen\apnsgcm\Apns::ENVIRONMENT_PRODUCTION,
+		'pemFile' => dirname(__FILE__).'/apnssert/apns-purelamo-dis-cert.pem',
+		// 'retryTimes' => 3,
+		'options' => [
+			'sendRetryTimes' => 5
+		]
+	],
         'log' => [
             'targets' => [
                 [
