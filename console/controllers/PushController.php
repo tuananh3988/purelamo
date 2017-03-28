@@ -33,15 +33,26 @@ class PushController extends \yii\console\Controller
                 ]
             ];
             
-            //send aos
-            Yii::info('send aos start', 'push');
-            $aos = Devices::find()->where(['type' => 2])->all();
-            $regisIds = [];
-            foreach ($aos as $a) {
-                if ()
-                $regisIds[] = $a['device_token'];
+            $devices = Devices::find()->where()->all();
+            $regisAosIds = [];
+            $regisIosIds = [];
+            foreach ($devices as $d) {
+                if ($d['type_time_recieve_notify'] != 1 &&  $d['type_time_recieve_notify'] != $timeType) {
+                    continue;
+                }
+                
+                if ($d['type'] === 1) {
+                    if (preg_match('~^[a-f0-9]{64}$~i', $i['device_token'])) {
+                        $regisIosIds[] = $i['device_token'];
+                    }
+                }
+                else {
+                    $regisAosIds[] = $a['device_token'];
+                }
             }
             
+            //send aos
+            Yii::info('send aos start', 'push');
             if (!empty($regisIds)) {
                 $firebase = new Firebase();
                 $result = $firebase->sendMultiple($regisIds, $res);
@@ -49,13 +60,6 @@ class PushController extends \yii\console\Controller
 
             //send ios
             Yii::info('send ios start', 'push');
-            $ios = Devices::find()->where(['type' => 1])->all();
-            $regisIds = [];
-            foreach ($ios as $i) {
-                if (preg_match('~^[a-f0-9]{64}$~i', $i['device_token'])) {
-                    $regisIds[] = $i['device_token'];
-                }
-            }
             if (!empty($regisIds)) {
                 $apns = Yii::$app->apns;
                 $mgs = $apns->sendMulti($regisIds, $n['message'],
